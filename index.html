@@ -166,6 +166,35 @@
     #refresh-button:hover {
       background-color: #4b5563;
     }
+
+    /* Floating Mute/Unmute button */
+    #mute-button {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(31, 41, 55, 0.9);
+      border: 1px solid #374151;
+      color: #ffffff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: none; /* hidden until started */
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 15;
+      transition: background-color 0.2s, transform 0.1s;
+      outline: none;
+    }
+
+    #mute-button:hover {
+      background-color: #4b5563;
+      transform: scale(1.05);
+    }
+
+    #mute-button:active {
+      transform: scale(0.95);
+    }
   </style>
 </head>
 <body>
@@ -190,6 +219,15 @@
 
   <!-- 4. Instruction Toast -->
   <div id="status-toast">Align card inside the frame</div>
+
+  <!-- Mute/Unmute floating button -->
+  <button id="mute-button" aria-label="Mute / Unmute video">
+    <svg id="mute-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+      <line x1="23" y1="9" x2="17" y2="15"></line>
+      <line x1="17" y1="9" x2="23" y2="15"></line>
+    </svg>
+  </button>
 
   <!-- 5. A-Frame AR Scene -->
   <a-scene 
@@ -220,6 +258,8 @@
       const startScreen = document.getElementById("start-screen");
       const startButton = document.getElementById("start-button");
       const refreshButton = document.getElementById("refresh-button");
+      const muteButton = document.getElementById("mute-button");
+      const muteIcon = document.getElementById("mute-icon");
       const headerStatus = document.getElementById("header-status");
       const scanBox = document.getElementById("scan-box");
       const statusToast = document.getElementById("status-toast");
@@ -235,39 +275,20 @@
         console.log("Initial video pause error:", e);
       }
 
-      // Helper function to restart camera engine and refetch video streams
-      const restartCameraFeed = () => {
-        headerStatus.textContent = "Reconnecting camera...";
-        headerStatus.style.color = "#ffffff";
-        scanBox.classList.remove("tracked");
-        statusToast.textContent = "Restarting camera feed...";
-
-        const arSystem = arScene.systems["mindar-image-system"];
-        if (arSystem) {
-          try {
-            arSystem.stop();
-          } catch (e) {
-            console.log("Error stopping arSystem:", e);
-          }
-          // Request a fresh camera stream after a short timeout
-          setTimeout(() => {
-            arSystem.start();
-            headerStatus.textContent = "Scanning for target...";
-            statusToast.textContent = "Align card inside the frame";
-          }, 300);
-        }
-      };
-
-      // When the user clicks the start button
-      startButton.addEventListener("click", () => {
+      // Helper function to start AR scanner and UI elements
+      const startARScanner = () => {
         // Hide start screen
         startScreen.style.display = "none";
 
-        // Show scanner frame, toast guide, and manual restart button
+        // Show scanner overlays and control buttons
         scanBox.style.display = "block";
         statusToast.style.display = "block";
         refreshButton.style.display = "block";
+        muteButton.style.display = "flex";
         headerStatus.textContent = "Scanning for target...";
+
+        // Set local storage/session storage to remember auto-start state on refresh
+        sessionStorage.setItem("ar_autostart", "true");
 
         // Start MindAR Engine
         const arSystem = arScene.systems["mindar-image-system"];
@@ -275,17 +296,32 @@
           arSystem.start();
         }
 
-        // Prime and play/pause the video inside user click gesture to unlock iOS Safari
+        // Prime the video player to unlock playback on mobile devices
         arVideo.play().then(() => {
           arVideo.pause();
         }).catch(err => {
           console.log("Initial video priming check:", err);
         });
+      };
+
+      // Check if we should automatically start (e.g. after page refresh)
+      if (sessionStorage.getItem("ar_autostart") === "true") {
+        // Wait a tiny moment for A-Frame systems to load fully before launching
+        setTimeout(() => {
+          startARScanner();
+        }, 500);
+      }
+
+      // When the user clicks the start button
+      startButton.addEventListener("click", () => {
+        startARScanner();
       });
 
-      // Manual camera restart button click handler
+      // Manual camera restart button - reloads page to guarantee a fresh camera context!
       refreshButton.addEventListener("click", () => {
-        restartCameraFeed();
+        // Ensure autostart flag is set so the camera turns back on immediately after refresh
+        sessionStorage.setItem("ar_autostart", "true");
+        window.location.reload();
       });
 
       // Automatically refetch camera when tab focus is regained (switching tabs / locking phone)
@@ -294,8 +330,38 @@
           // Only auto-restart if we already passed the start screen
           if (startScreen.style.display === "none") {
             console.log("Tab focus regained: refetching camera stream...");
-            restartCameraFeed();
+            const arSystem = arScene.systems["mindar-image-system"];
+            if (arSystem) {
+              try {
+                arSystem.stop();
+              } catch (e) {
+                console.log("Error stopping arSystem:", e);
+              }
+              setTimeout(() => {
+                arSystem.start();
+              }, 300);
+            }
           }
+        }
+      });
+
+      // Handle Mute/Unmute toggle click
+      muteButton.addEventListener("click", () => {
+        if (arVideo.muted) {
+          arVideo.muted = false;
+          // Change SVG to unmuted speaker icon (speaker + soundwaves)
+          muteIcon.innerHTML = `
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          `;
+        } else {
+          arVideo.muted = true;
+          // Change SVG to muted speaker icon (speaker + slash)
+          muteIcon.innerHTML = `
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          `;
         }
       });
 
