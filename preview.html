@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Target Image Preview - WebAR Demo</title>
-  
+
   <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <style>
     :root {
       --primary: #6366f1;
@@ -47,20 +49,6 @@
       align-items: center;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 0.5rem 1.2rem;
-      border-radius: 99px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #a5b4fc;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 1.5rem;
-    }
 
     h1 {
       font-size: 2.25rem;
@@ -119,10 +107,34 @@
       height: 20px;
       border: 3px solid var(--primary);
     }
-    .t-l { top: 1.5rem; left: 1.5rem; border-right: none; border-bottom: none; }
-    .t-r { top: 1.5rem; right: 1.5rem; border-left: none; border-bottom: none; }
-    .b-l { bottom: 1.5rem; left: 1.5rem; border-right: none; border-top: none; }
-    .b-r { bottom: 1.5rem; right: 1.5rem; border-left: none; border-top: none; }
+
+    .t-l {
+      top: 1.5rem;
+      left: 1.5rem;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .t-r {
+      top: 1.5rem;
+      right: 1.5rem;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .b-l {
+      bottom: 1.5rem;
+      left: 1.5rem;
+      border-right: none;
+      border-top: none;
+    }
+
+    .b-r {
+      bottom: 1.5rem;
+      right: 1.5rem;
+      border-left: none;
+      border-top: none;
+    }
 
     .card-label {
       margin-top: 1.25rem;
@@ -222,7 +234,9 @@
         size: portrait;
         margin: 0;
       }
-      html, body {
+
+      html,
+      body {
         width: 100%;
         height: 100%;
         background: #020617 !important;
@@ -235,9 +249,17 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
-      .badge, h1, .subtitle, .instructions-box, .print-button, .card-label, .target-corner {
+
+      .badge,
+      h1,
+      .subtitle,
+      .instructions-box,
+      .print-button,
+      .card-label,
+      .target-corner {
         display: none !important;
       }
+
       .card-display {
         border: 2px dashed #475569;
         padding: 12px;
@@ -254,6 +276,7 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
+
       .card-wrapper {
         border: 1px solid rgba(255, 255, 255, 0.1);
         width: 100%;
@@ -264,6 +287,7 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
+
       .card-wrapper img {
         width: 100%;
         height: 100%;
@@ -272,41 +296,39 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="container">
-    <div class="badge">Reference target</div>
-    <h1>Image Target Card</h1>
-    <p class="subtitle">
-      This is the reference target image registered with MindAR. Keep this page open on your computer screen or print it, then point your mobile camera at it.
-    </p>
-
     <!-- Scan display container -->
     <div class="card-display">
       <div class="target-corner t-l"></div>
       <div class="target-corner t-r"></div>
       <div class="target-corner b-l"></div>
       <div class="target-corner b-r"></div>
-      
+
       <div class="card-wrapper">
         <img src="assets/card.png" alt="MindAR Target Card to be tracked">
       </div>
-      
+
       <p class="card-label">MindAR Target: Index 0</p>
     </div>
 
     <!-- How to test guide -->
     <div class="instructions-box">
       <div class="instructions-title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-          <path d="M18.06 2.3c.15-.05.32-.08.49-.08h3.32a.13.13 0 0 1 .13.13v3.33c0 .16-.03.33-.08.48L18 10.05l-4.1-4.1z"></path>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+          <path
+            d="M18.06 2.3c.15-.05.32-.08.49-.08h3.32a.13.13 0 0 1 .13.13v3.33c0 .16-.03.33-.08.48L18 10.05l-4.1-4.1z">
+          </path>
           <path d="m14 14-4 4H6v-4l4-4"></path>
           <path d="M21 21v-3.32a.13.13 0 0 0-.13-.13h-3.32a.48.48 0 0 0-.49.08L13 21.68l4.1 4.1z"></path>
           <circle cx="12" cy="12" r="1"></circle>
         </svg>
         How to Test the Experience
       </div>
-      
+
       <div class="instructions-list">
         <div class="instruction-step">
           <div class="step-badge">1</div>
@@ -314,13 +336,15 @@
             <strong>Open the main application page</strong> on your physical smartphone or mobile test device.
           </div>
         </div>
-        
+
         <div class="instruction-step">
           <div class="step-badge">2</div>
           <div class="instruction-text">
-            Ensure your smartphone is on the <strong>same Wi-Fi network</strong> as this server, and connect via the secure HTTPS address:
+            Ensure your smartphone is on the <strong>same Wi-Fi network</strong> as this server, and connect via the
+            secure HTTPS address:
             <div class="ip-indicator">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
                 <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
                 <line x1="6" y1="6" x2="6.01" y2="6"></line>
@@ -334,7 +358,8 @@
         <div class="instruction-step">
           <div class="step-badge">3</div>
           <div class="instruction-text">
-            Tap <strong>Start Experience</strong>, grant camera permission, and aim your phone's camera directly at the target card image shown above.
+            Tap <strong>Start Experience</strong>, grant camera permission, and aim your phone's camera directly at the
+            target card image shown above.
           </div>
         </div>
       </div>
@@ -346,4 +371,5 @@
   </div>
 
 </body>
+
 </html>
