@@ -167,16 +167,16 @@
       background-color: #4b5563;
     }
 
-    /* Floating Mute/Unmute button */
+    /* Floating Mute/Unmute button (Instagram-style) */
     #mute-button {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-      background-color: rgba(31, 41, 55, 0.9);
-      border: 1px solid #374151;
+      bottom: 24px;
+      right: 24px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border: none;
       color: #ffffff;
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: none; /* hidden until started */
       align-items: center;
@@ -188,12 +188,37 @@
     }
 
     #mute-button:hover {
-      background-color: #4b5563;
-      transform: scale(1.05);
+      background-color: rgba(0, 0, 0, 0.8);
+      transform: scale(1.08);
     }
 
     #mute-button:active {
-      transform: scale(0.95);
+      transform: scale(0.92);
+    }
+
+    /* Instagram-style sound flash animation in center of screen */
+    #sound-flash {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease-out, transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #sound-flash.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
     }
   </style>
 </head>
@@ -229,6 +254,15 @@
     </svg>
   </button>
 
+  <!-- Instagram-style sound flash overlay -->
+  <div id="sound-flash" aria-hidden="true">
+    <svg id="sound-flash-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+      <line x1="23" y1="9" x2="17" y2="15"></line>
+      <line x1="17" y1="9" x2="23" y2="15"></line>
+    </svg>
+  </div>
+
   <!-- 5. A-Frame AR Scene -->
   <a-scene 
     id="ar-scene"
@@ -260,6 +294,8 @@
       const refreshButton = document.getElementById("refresh-button");
       const muteButton = document.getElementById("mute-button");
       const muteIcon = document.getElementById("mute-icon");
+      const soundFlash = document.getElementById("sound-flash");
+      const soundFlashIcon = document.getElementById("sound-flash-icon");
       const headerStatus = document.getElementById("header-status");
       const scanBox = document.getElementById("scan-box");
       const statusToast = document.getElementById("status-toast");
@@ -304,6 +340,54 @@
         });
       };
 
+      // Function to toggle mute state and animate the center pop-up flash (Instagram-style)
+      const toggleMuteState = () => {
+        // Only allow sound changes if AR has started (onboarding is closed)
+        if (startScreen.style.display !== "none") return;
+
+        if (arVideo.muted) {
+          arVideo.muted = false;
+          
+          // Update bottom-right mute button icon
+          muteIcon.innerHTML = `
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          `;
+          
+          // Update center sound flash icon
+          soundFlashIcon.innerHTML = `
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          `;
+        } else {
+          arVideo.muted = true;
+          
+          // Update bottom-right mute button icon
+          muteIcon.innerHTML = `
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          `;
+          
+          // Update center sound flash icon
+          soundFlashIcon.innerHTML = `
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          `;
+        }
+
+        // Trigger flash pop-up animation in center of screen
+        soundFlash.classList.remove("show");
+        void soundFlash.offsetWidth; // Force CSS reflow to restart animation
+        soundFlash.classList.add("show");
+
+        // Hide flash after 600ms
+        setTimeout(() => {
+          soundFlash.classList.remove("show");
+        }, 600);
+      };
+
       // Check if we should automatically start (e.g. after page refresh)
       if (sessionStorage.getItem("ar_autostart") === "true") {
         // Wait a tiny moment for A-Frame systems to load fully before launching
@@ -345,24 +429,24 @@
         }
       });
 
-      // Handle Mute/Unmute toggle click
-      muteButton.addEventListener("click", () => {
-        if (arVideo.muted) {
-          arVideo.muted = false;
-          // Change SVG to unmuted speaker icon (speaker + soundwaves)
-          muteIcon.innerHTML = `
-            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          `;
-        } else {
-          arVideo.muted = true;
-          // Change SVG to muted speaker icon (speaker + slash)
-          muteIcon.innerHTML = `
-            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-            <line x1="23" y1="9" x2="17" y2="15"></line>
-            <line x1="17" y1="9" x2="23" y2="15"></line>
-          `;
+      // Handle Mute/Unmute toggle click on floating button
+      muteButton.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent duplicate toggle from body click
+        toggleMuteState();
+      });
+
+      // Tap/click screen canvas to toggle mute state (like Instagram)
+      document.body.addEventListener("click", (e) => {
+        // Prevent click events on buttons or header from triggering the mute toggle
+        if (
+          e.target.closest("#refresh-button") || 
+          e.target.closest("#start-screen") || 
+          e.target.closest(".header") || 
+          e.target.closest("#mute-button")
+        ) {
+          return;
         }
+        toggleMuteState();
       });
 
       // Listen for target detected
