@@ -19,7 +19,9 @@
       background-color: transparent;
       color: #ffffff;
       font-family: Arial, sans-serif;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto; /* Enable native browser pull-to-refresh */
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Make sure A-Frame scene covers the entire screen behind UI */
@@ -146,33 +148,7 @@
       border-color: #10b981;
     }
 
-    /* Pull-to-refresh indicator (Instagram-style) */
-    #pull-to-refresh {
-      position: fixed;
-      top: -60px; /* Hidden offscreen by default */
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(31, 41, 55, 0.95);
-      border: 1px solid #4b5563;
-      color: #ffffff;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000; /* Float above everything including start screen */
-      transition: transform 0.1s ease-out, top 0.2s ease-out, background-color 0.2s;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
 
-    #pull-to-refresh.pulling {
-      top: 20px; /* Pull down to 20px from top */
-    }
-
-    #pull-spinner {
-      transition: transform 0.05s linear;
-    }
 
     /* Floating Mute/Unmute button (Instagram-style) */
     #mute-button {
@@ -269,12 +245,7 @@
     </svg>
   </div>
 
-  <!-- Custom pull-to-refresh spinner (Instagram-style) -->
-  <div id="pull-to-refresh" aria-hidden="true">
-    <svg id="pull-spinner" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-    </svg>
-  </div>
+
 
   <!-- 5. A-Frame AR Scene -->
   <a-scene 
@@ -308,8 +279,6 @@
       const muteIcon = document.getElementById("mute-icon");
       const soundFlash = document.getElementById("sound-flash");
       const soundFlashIcon = document.getElementById("sound-flash-icon");
-      const pullToRefresh = document.getElementById("pull-to-refresh");
-      const pullSpinner = document.getElementById("pull-spinner");
       const headerStatus = document.getElementById("header-status");
       const scanBox = document.getElementById("scan-box");
       const statusToast = document.getElementById("status-toast");
@@ -402,66 +371,23 @@
       };
 
       // Check if we should automatically start (e.g. after page refresh)
-      if (sessionStorage.getItem("ar_autostart") === "true") {
-        // Wait a tiny moment for A-Frame systems to load fully before launching
-        setTimeout(() => {
+      const runAutostart = () => {
+        if (sessionStorage.getItem("ar_autostart") === "true") {
           startARScanner();
-        }, 500);
+        }
+      };
+
+      // Wait for A-Frame scene to be fully loaded and initialized before starting camera
+      if (arScene.hasLoaded) {
+        runAutostart();
+      } else {
+        arScene.addEventListener("loaded", runAutostart);
       }
 
       // When the user clicks the start button
       startButton.addEventListener("click", () => {
         startARScanner();
       });
-
-      // Touch drag-to-refresh logic (custom Pull-to-Refresh)
-      let touchStartY = 0;
-      let pulling = false;
-
-      document.body.addEventListener("touchstart", (e) => {
-        // Only track pulls if onboarding is completed
-        if (startScreen.style.display !== "none") return;
-        
-        // Save initial Y touch point
-        touchStartY = e.touches[0].clientY;
-        pulling = false;
-      }, { passive: true });
-
-      document.body.addEventListener("touchmove", (e) => {
-        if (startScreen.style.display !== "none") return;
-
-        const touchY = e.touches[0].clientY;
-        const diff = touchY - touchStartY;
-
-        // If dragging down from near the top of the screen
-        if (diff > 20 && touchStartY < 180) {
-          pulling = true;
-          pullToRefresh.classList.add("pulling");
-          // Rotate the reload icon based on drag distance
-          const rotation = Math.min(diff * 2, 360);
-          pullSpinner.style.transform = `rotate(${rotation}deg)`;
-        }
-      }, { passive: true });
-
-      document.body.addEventListener("touchend", (e) => {
-        if (pulling) {
-          const touchY = e.changedTouches[0].clientY;
-          const diff = touchY - touchStartY;
-
-          // If pulled down past the threshold (e.g. 100px), reload the page!
-          if (diff > 100) {
-            pullToRefresh.style.backgroundColor = "#10b981"; // Turn indicator green on reload trigger
-            sessionStorage.setItem("ar_autostart", "true");
-            setTimeout(() => {
-              window.location.reload();
-            }, 250);
-          } else {
-            // Cancel pull and hide spinner
-            pullToRefresh.classList.remove("pulling");
-          }
-        }
-        pulling = false;
-      }, { passive: true });
 
       // Automatically refetch camera when tab focus is regained (switching tabs / locking phone)
       document.addEventListener("visibilitychange", () => {
