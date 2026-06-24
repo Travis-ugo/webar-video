@@ -370,7 +370,12 @@
         }, 600);
       };
 
-      // Check if we should automatically start (e.g. after page refresh)
+      // Check if we should automatically start (e.g. after page refresh or URL parameter)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("autostart") === "true") {
+        sessionStorage.setItem("ar_autostart", "true");
+      }
+
       const runAutostart = () => {
         if (sessionStorage.getItem("ar_autostart") === "true") {
           startARScanner();
