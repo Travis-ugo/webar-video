@@ -3,14 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My First WebAR App</title>
+  <title>Teacher Edition: WebAR Live-Coding Sandbox</title>
   
-  <!-- A-Frame and MindAR Libraries -->
+  <!-- 
+    TEACHER STEP 1: IMPORT CORE WEB LIBRARIES
+    - A-Frame: WebGL 3D rendering wrapper (uses HTML tags for WebGL).
+    - MindAR: Computer vision library that tracks target signatures.
+  -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   
   <style>
-    /* Basic Page Styles */
+    /* 
+      TEACHER STEP 2: PAGE OVERFLOWS & VIEWPORT LOCKS
+      - Enable overflow-y: auto to allow native mobile pull-to-refresh.
+      - Use fixed/absolute positioning on HUD elements to lock them on top of WebGL canvas.
+    */
     html, body {
       margin: 0;
       padding: 0;
@@ -20,11 +28,10 @@
       color: #ffffff;
       font-family: Arial, sans-serif;
       overflow-x: hidden;
-      overflow-y: auto; /* Enable native browser pull-to-refresh */
+      overflow-y: auto; 
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Make sure A-Frame scene covers the entire screen behind UI */
     #ar-scene {
       position: absolute;
       top: 0;
@@ -35,7 +42,7 @@
       display: block;
     }
 
-    /* Simple Header Bar */
+    /* Absolute floating header HUD */
     .header {
       position: absolute;
       top: 0;
@@ -55,7 +62,7 @@
       letter-spacing: 1px;
     }
 
-    /* Onboarding / Start Screen */
+    /* Onboarding Screen (Solves Browser Autoplay blocks) */
     #start-screen {
       position: fixed;
       top: 0;
@@ -111,7 +118,7 @@
       background-color: #4f46e5;
     }
 
-    /* Floating Status Text when scanning */
+    /* Bottom status feedback toast */
     #status-toast {
       position: absolute;
       bottom: 20px;
@@ -124,11 +131,11 @@
       font-size: 0.85rem;
       z-index: 10;
       pointer-events: none;
-      display: none; /* hidden until started */
-      white-space: nowrap; /* Keep toast text strictly on one line */
+      display: none;
+      white-space: nowrap;
     }
 
-    /* Dashed Scanning Box in center */
+    /* Dashed targeting frame */
     #scan-box {
       position: absolute;
       top: 50%;
@@ -140,17 +147,14 @@
       border-radius: 16px;
       z-index: 10;
       pointer-events: none;
-      display: none; /* hidden until started */
+      display: none;
     }
 
-    /* Highlight border green when tracked */
     #scan-box.tracked {
       border-color: #10b981;
     }
 
-
-
-    /* Floating Mute/Unmute button (Instagram-style) */
+    /* Instagram-Style Volume Buttons */
     #mute-button {
       position: absolute;
       bottom: 24px;
@@ -161,7 +165,7 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      display: none; /* hidden until started */
+      display: none;
       align-items: center;
       justify-content: center;
       cursor: pointer;
@@ -179,7 +183,7 @@
       transform: scale(0.92);
     }
 
-    /* Instagram-style sound flash animation in center of screen */
+    /* Circular speaker status indicator */
     #sound-flash {
       position: fixed;
       top: 50%;
@@ -207,28 +211,28 @@
 </head>
 <body>
 
-  <!-- 1. Start Screen Overlay -->
+  <!-- Onboarding screen block -->
   <div id="start-screen">
     <div class="start-container">
-      <h1>WebAR Video Player</h1>
-      <p>Welcome! Tap the button below, allow camera permissions, and point your camera at the target card image.</p>
+      <h1>WebAR Live Coding</h1>
+      <p>Click start, grant camera permissions, and align target card in the frame guidelines.</p>
       <button class="start-btn" id="start-button">Start Camera</button>
     </div>
   </div>
 
-  <!-- 2. Header Status -->
+  <!-- Header HUD status bar -->
   <div class="header">
-    <h2 id="header-status">WebAR Scanner</h2>
+    <h2 id="header-status">WebAR Demo Running</h2>
   </div>
 
-  <!-- 3. Visual Scanner Box -->
+  <!-- Dashed target box guide -->
   <div id="scan-box"></div>
 
-  <!-- 4. Instruction Toast -->
+  <!-- Status toast guide -->
   <div id="status-toast">Align card inside the frame</div>
 
-  <!-- Mute/Unmute floating button -->
-  <button id="mute-button" aria-label="Mute / Unmute video">
+  <!-- Mute floating indicator button -->
+  <button id="mute-button" aria-label="Mute / Unmute video overlay">
     <svg id="mute-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
       <line x1="23" y1="9" x2="17" y2="15"></line>
@@ -236,7 +240,7 @@
     </svg>
   </button>
 
-  <!-- Instagram-style sound flash overlay -->
+  <!-- Large central popup overlay flashing speaker status -->
   <div id="sound-flash" aria-hidden="true">
     <svg id="sound-flash-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
@@ -245,9 +249,11 @@
     </svg>
   </div>
 
-
-
-  <!-- 5. A-Frame AR Scene -->
+  <!-- 
+    TEACHER STEP 3: MOUNT A-FRAME CONTAINER
+    - autoStart: false. Halts tracker so browser permissions aren't requested on load.
+    - filterMinCF & filterBeta: Controls sensor smoothing parameters.
+  -->
   <a-scene 
     id="ar-scene"
     mindar-image="imageTargetSrc: assets/card.mind; autoStart: false; filterMinCF:0.0001; filterBeta:0.001; uiScanning: no;" 
@@ -255,24 +261,33 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false">
     
+    <!-- 
+      TEACHER STEP 4: PRELOAD MUTED ASSETS
+      - playsinline webkit-playsinline: Locks video inline on iOS Safari (no native player popup).
+      - muted loop: Required flags to bypass Chrome/Safari autoplay lockouts.
+    -->
     <a-assets>
-      <!-- The video asset we want to show on the target card -->
       <video id="ar-video" src="assets/video.mp4" preload="auto" autoplay loop muted playsinline webkit-playsinline></video>
     </a-assets>
 
-    <!-- Camera -->
+    <!-- Camera element -->
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- Target Entity index 0 -->
+    <!-- 
+      TEACHER STEP 5: COORDINATE TRACKING TARGET
+      - targetIndex: 0. Maps to first compiled image inside card.mind.
+      - <a-video>: Projects standard 2D flat video file onto target surface plane coordinates.
+    -->
     <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
       <a-video src="#ar-video" position="0 0 0" rotation="0 0 0" width="1.4" height="0.7875" scale="1.2 1.2 1"></a-video>
     </a-entity>
 
   </a-scene>
 
-  <!-- 6. Control Scripts -->
+  <!-- LIVE CODING CONTROL LOGIC -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // TEACHER STEP 6: RETRIEVE DOM INTERFACE ELEMENTS
       const startScreen = document.getElementById("start-screen");
       const startButton = document.getElementById("start-button");
       const muteButton = document.getElementById("mute-button");
@@ -283,94 +298,83 @@
       const scanBox = document.getElementById("scan-box");
       const statusToast = document.getElementById("status-toast");
 
+      // TEACHER STEP 7: RETRIEVE A-FRAME SCENE ELEMENTS
       const arScene = document.getElementById("ar-scene");
       const arTarget = document.getElementById("ar-target");
       const arVideo = document.getElementById("ar-video");
 
-      // Force video pause on initial load
+      // Pause playback initially to keep CPU and networking loops optimized
       try {
         arVideo.pause();
       } catch (e) {
         console.log("Initial video pause error:", e);
       }
 
-      // Helper function to start AR scanner and UI elements
-      const startARScanner = () => {
-        // Hide start screen
-        startScreen.style.display = "none";
+      // SVG path constants for Instagram audio controls
+      const SPEAKER_UNMUTED_SVG = `
+        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      `;
 
-        // Show scanner overlays and control buttons
+      const SPEAKER_MUTED_SVG = `
+        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      `;
+
+      // TEACHER STEP 8: DECLARE SCANNER LAUNCH TRIGGER
+      const startARScanner = () => {
+        // Toggle HUD display modes
+        startScreen.style.display = "none";
         scanBox.style.display = "block";
         statusToast.style.display = "block";
         muteButton.style.display = "flex";
         headerStatus.textContent = "Scanning for target...";
 
-        // Set local storage/session storage to remember auto-start state on refresh
+        // Set sessionStorage so reloads auto-run the scanner (avoids repeating onboarding taps)
         sessionStorage.setItem("ar_autostart", "true");
 
-        // Start MindAR Engine
+        // Fire up computer vision thread
         const arSystem = arScene.systems["mindar-image-system"];
         if (arSystem) {
           arSystem.start();
         }
 
-        // Prime the video player to unlock playback on mobile devices
+        // UNLOCK AUDIO CONTEXT:
+        // Priming the video player. Calling .play() followed immediately by .pause() inside the 
+        // user's click gesture unlocks the device speaker context so we can programmatically play later.
         arVideo.play().then(() => {
           arVideo.pause();
         }).catch(err => {
-          console.log("Initial video priming check:", err);
+          console.log("Video media priming blocked:", err);
         });
       };
 
-      // Function to toggle mute state and animate the center pop-up flash (Instagram-style)
+      // TEACHER STEP 9: INSTAGRAM-STYLE MUTE CONTROLS
       const toggleMuteState = () => {
-        // Only allow sound changes if AR has started (onboarding is closed)
-        if (startScreen.style.display !== "none") return;
+        if (startScreen.style.display !== "none") return; // Block clicks if onboarding screen is active
 
         if (arVideo.muted) {
           arVideo.muted = false;
-          
-          // Update bottom-right mute button icon
-          muteIcon.innerHTML = `
-            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          `;
-          
-          // Update center sound flash icon
-          soundFlashIcon.innerHTML = `
-            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          `;
+          muteIcon.innerHTML = SPEAKER_UNMUTED_SVG;
+          soundFlashIcon.innerHTML = SPEAKER_UNMUTED_SVG;
         } else {
           arVideo.muted = true;
-          
-          // Update bottom-right mute button icon
-          muteIcon.innerHTML = `
-            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-            <line x1="23" y1="9" x2="17" y2="15"></line>
-            <line x1="17" y1="9" x2="23" y2="15"></line>
-          `;
-          
-          // Update center sound flash icon
-          soundFlashIcon.innerHTML = `
-            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-            <line x1="23" y1="9" x2="17" y2="15"></line>
-            <line x1="17" y1="9" x2="23" y2="15"></line>
-          `;
+          muteIcon.innerHTML = SPEAKER_MUTED_SVG;
+          soundFlashIcon.innerHTML = SPEAKER_MUTED_SVG;
         }
 
-        // Trigger flash pop-up animation in center of screen
+        // Animate central feedback flash
         soundFlash.classList.remove("show");
-        void soundFlash.offsetWidth; // Force CSS reflow to restart animation
+        void soundFlash.offsetWidth; // Force DOM flow recalculation to reset CSS animation keyframes
         soundFlash.classList.add("show");
 
-        // Hide flash after 600ms
         setTimeout(() => {
           soundFlash.classList.remove("show");
         }, 600);
       };
 
-      // Check if we should automatically start (e.g. after page refresh or URL parameter)
+      // TEACHER STEP 10: AUTO-START FLAG RESOLUTIONS (?autostart=true)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("autostart") === "true") {
         sessionStorage.setItem("ar_autostart", "true");
@@ -382,31 +386,32 @@
         }
       };
 
-      // Wait for A-Frame scene to be fully loaded and initialized before starting camera
+      // A-Frame Scene Load guard: make sure components exist in WebGL memory
       if (arScene.hasLoaded) {
         runAutostart();
       } else {
         arScene.addEventListener("loaded", runAutostart);
       }
 
-      // When the user clicks the start button
       startButton.addEventListener("click", () => {
         startARScanner();
       });
 
-      // Automatically refetch camera when tab focus is regained (switching tabs / locking phone)
+      // TEACHER STEP 11: WEBCAM FOCUS RECOVERY (visibilitychange API)
+      // Tab swaps and phone lock screens freeze mobile webcam streams.
+      // We catch visibility changes, shut down frozen streams, and run arSystem.start() fresh.
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
-          // Only auto-restart if we already passed the start screen
           if (startScreen.style.display === "none") {
-            console.log("Tab focus regained: refetching camera stream...");
+            console.log("Tab focus regained: restarting camera threads...");
             const arSystem = arScene.systems["mindar-image-system"];
             if (arSystem) {
               try {
                 arSystem.stop();
               } catch (e) {
-                console.log("Error stopping arSystem:", e);
+                console.log("Tracker stop exception:", e);
               }
+              // Short delay to let camera resources release before requesting a new feed
               setTimeout(() => {
                 arSystem.start();
               }, 300);
@@ -415,15 +420,14 @@
         }
       });
 
-      // Handle Mute/Unmute toggle click on floating button
+      // Mute button handler
       muteButton.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevent duplicate toggle from body click
+        e.stopPropagation(); // Avoid triggering page click listener
         toggleMuteState();
       });
 
-      // Tap/click screen canvas to toggle mute state (like Instagram)
+      // Full screen tap gesture listener
       document.body.addEventListener("click", (e) => {
-        // Prevent click events on buttons or header from triggering the mute toggle
         if (
           e.target.closest("#start-screen") || 
           e.target.closest(".header") || 
@@ -434,34 +438,36 @@
         toggleMuteState();
       });
 
-      // Listen for target detected
+      // TEACHER STEP 12: BIND COMPUTER VISION EVENT RECOGNITIONS
+      
+      // TARGET FOUND: Card matches anchors
       arTarget.addEventListener("targetFound", () => {
         headerStatus.textContent = "Target Tracked - Playing Video";
-        headerStatus.style.color = "#10b981"; // green text
+        headerStatus.style.color = "#10b981"; // change header font color to green
         scanBox.classList.add("tracked");
         statusToast.textContent = "Video playing";
         
-        // Reset playback to start safely
+        // Reset playback head to frame 0 for a clean start loop
         try {
           if (arVideo.readyState > 0) {
             arVideo.currentTime = 0;
           }
         } catch (e) {
-          console.log("Could not reset currentTime:", e);
+          console.log("currentTime reset exception:", e);
         }
 
         arVideo.play().catch(err => {
-          console.log("Playback failed on targetFound:", err);
+          console.log("Video playback execution blocked:", err);
         });
       });
 
-      // Listen for target lost
+      // TARGET LOST: Card removed from lens path
       arTarget.addEventListener("targetLost", () => {
         headerStatus.textContent = "Scanning for target...";
-        headerStatus.style.color = "#ffffff"; // default white text
+        headerStatus.style.color = "#ffffff";
         scanBox.classList.remove("tracked");
         statusToast.textContent = "Align card inside the frame";
-        arVideo.pause();
+        arVideo.pause(); // Pause playback to stop GPU loops and keep mobile battery optimized
       });
     });
   </script>
