@@ -1,0 +1,51 @@
+mak
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple WebAR Video Overlay (Beginner Version)</title>
+
+  <!-- A-Frame and MindAR Libraries -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- The WebAR A-Frame Scene -->
+  <!-- We point imageTargetSrc to our compiled target asset -->
+  <a-scene mindar-image="imageTargetSrc: ../assets/card.mind; filterMinCF:0.0001; filterBeta:0.001;" embedded
+    vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <!-- Preload the MP4 video. playsinline is required for iOS compatibility -->
+      <!-- Autoplay is allowed by browsers only because we have set it to 'muted' -->
+      <video id="ar-video" src="../assets/video.mp4" preload="auto" loop="true" playsinline webkit-playsinline autoplay
+        muted>
+      </video>
+    </a-assets>
+
+    <!-- Camera Element -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Target Entity: Index 0 refers to the target image compiled in card.mind -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <!-- The virtual display layer positioned directly over the card -->
+      <a-video src="#ar-video" position="0 0 0" rotation="0 0 0" width="1.4" height="0.7875">
+      </a-video>
+    </a-entity>
+
+  </a-scene>
+
+</body>
+
+</html>
