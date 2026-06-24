@@ -11,13 +11,26 @@
   
   <style>
     /* Basic Page Styles */
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      background-color: #111827;
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
       color: #ffffff;
       font-family: Arial, sans-serif;
       overflow: hidden;
+    }
+
+    /* Make sure A-Frame scene covers the entire screen behind UI */
+    #ar-scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
     }
 
     /* Simple Header Bar */
@@ -165,7 +178,7 @@
     
     <a-assets>
       <!-- The video asset we want to show on the target card -->
-      <video id="ar-video" src="assets/video.mp4" playsinline webkit-playsinline loop muted></video>
+      <video id="ar-video" src="assets/video.mp4" preload="auto" autoplay loop muted playsinline webkit-playsinline></video>
     </a-assets>
 
     <!-- Camera -->
@@ -191,6 +204,13 @@
       const arTarget = document.getElementById("ar-target");
       const arVideo = document.getElementById("ar-video");
 
+      // Force video pause on initial load
+      try {
+        arVideo.pause();
+      } catch (e) {
+        console.log("Initial video pause error:", e);
+      }
+
       // When the user clicks the start button
       startButton.addEventListener("click", () => {
         // Hide start screen
@@ -207,11 +227,11 @@
           arSystem.start();
         }
 
-        // Prime the video player
+        // Prime and play/pause the video inside user click gesture to unlock iOS Safari
         arVideo.play().then(() => {
           arVideo.pause();
         }).catch(err => {
-          console.log("Video priming check:", err);
+          console.log("Initial video priming check:", err);
         });
       });
 
@@ -221,7 +241,19 @@
         headerStatus.style.color = "#10b981"; // green text
         scanBox.classList.add("tracked");
         statusToast.textContent = "Video playing";
-        arVideo.play();
+        
+        // Reset playback to start safely
+        try {
+          if (arVideo.readyState > 0) {
+            arVideo.currentTime = 0;
+          }
+        } catch (e) {
+          console.log("Could not reset currentTime:", e);
+        }
+
+        arVideo.play().catch(err => {
+          console.log("Playback failed on targetFound:", err);
+        });
       });
 
       // Listen for target lost
