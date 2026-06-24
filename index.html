@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self-Hosted WebAR Video Overlay Demo</title>
+  <meta name="description"
+    content="A premium browser-based augmented reality experience using MindAR and A-Frame. Scan the target card to play the video overlay instantly.">
+
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- A-Frame and MindAR Libraries -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+  <!-- UI CONTROLS LAYER -->
+  <div id="ui-container">
+
+    <!-- Onboarding Modal Dialog Overlay -->
+    <div id="onboarding-screen">
+      <div class="card-modal">
+        <div class="logo-container">
+          <div class="logo-badge">WebAR Experience</div>
+        </div>
+        <h1>Video Target Demo</h1>
+        <p class="onboarding-desc">
+          Welcome to the WebAR Image Tracking Demo. We will access your device's camera to superimpose a dynamic video
+          overlay directly onto the target card.
+        </p>
+
+        <div class="steps-container">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-text">
+              Allow Camera Permissions
+              <span>Your browser will ask for webcam access to track targets.</span>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-text">
+              Scan the Target Card
+              <span>Point the camera at the reference image to reveal the video.</span>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-text">
+              Interact & Control
+              <span>Tap the audio controls or scan again to explore the experience.</span>
+            </div>
+          </div>
+        </div>
+
+        <button id="start-btn" class="btn btn-primary" aria-label="Start WebAR Experience">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          Start Experience
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Scanning & Control UI Overlay -->
+    <div id="scanner-overlay">
+      <!-- Top Header Bar -->
+      <div class="header-bar">
+        <div class="status-badge">
+          <div id="status-dot" class="status-dot"></div>
+          <span id="status-text">Scanning for target...</span>
+        </div>
+
+        <a href="preview.html" target="_blank" class="target-preview-trigger" id="preview-link"
+          aria-label="Open scanning card preview page">
+          View Target Card
+        </a>
+      </div>
+
+      <!-- Reference Target Card Thumbnail -->
+      <div class="target-thumbnail-container">
+        <img src="assets/card.png" alt="Reference Target Card Thumbnail">
+        <span>Scan Target</span>
+      </div>
+
+      <!-- Scanning Reticle -->
+      <div class="reticle-container">
+        <div id="reticle-box" class="reticle-box">
+          <div class="scan-line"></div>
+          <div class="corner top-left"></div>
+          <div class="corner top-right"></div>
+          <div class="corner bottom-left"></div>
+          <div class="corner bottom-right"></div>
+        </div>
+      </div>
+
+      <!-- Scan Guide Toast -->
+      <div id="scan-toast" class="scan-instruction-toast">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 16v-4"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
+        <span>Align card target inside the outline</span>
+      </div>
+
+      <!-- Bottom Control Bar -->
+      <div class="footer-bar">
+        <button id="mute-btn" class="btn-action" aria-label="Toggle video volume" disabled>
+          <svg id="volume-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" class="sound-wave"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" class="sound-wave"></path>
+            <line x1="23" y1="9" x2="23" y2="15" style="display:none;" class="mute-cross"></line>
+          </svg>
+          <span id="volume-text">Muted</span>
+        </button>
+
+        <button id="reset-btn" class="btn-action" aria-label="Go back to home screen">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Home
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- A-FRAME WEBAR SCENE -->
+  <!-- We start the scene only after user taps 'Start Experience' to request permissions elegantly -->
+  <a-scene id="ar-scene"
+    mindar-image="imageTargetSrc: assets/card.mind; autoStart: false; filterMinCF:0.0001; filterBeta:0.001; uiScanning: no;"
+    embedded renderer="colorManagement: true, physicallyCorrectLights: true" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <!-- We load video element, setting playsinline to allow browser inline playback on iOS -->
+      <video id="ar-video" src="assets/video.mp4" preload="auto" loop="true" playsinline webkit-playsinline muted>
+      </video>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- AR Target entity mapping to Target Index 0 (card.mind contains index 0) -->
+    <!-- The physical business card is horizontal: aspect ratio approx 1.8 (width 1, height 0.55) -->
+    <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
+      <a-video id="video-entity" src="#ar-video" position="0 0 0" rotation="0 0 0" width="1" height="0.5625"
+        scale="1.4 1.4 1">
+      </a-video>
+    </a-entity>
+
+  </a-scene>
+
+  <!-- CONTROL LOGIC SCRIPT -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const onboardingScreen = document.getElementById("onboarding-screen");
+      const scannerOverlay = document.getElementById("scanner-overlay");
+      const startBtn = document.getElementById("start-btn");
+      const muteBtn = document.getElementById("mute-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const statusDot = document.getElementById("status-dot");
+      const statusText = document.getElementById("status-text");
+      const volumeIcon = document.getElementById("volume-icon");
+      const volumeText = document.getElementById("volume-text");
+      const scanToast = document.getElementById("scan-toast");
+      const reticleBox = document.getElementById("reticle-box");
+
+      const arScene = document.getElementById("ar-scene");
+      const arTarget = document.getElementById("ar-target");
+      const videoEl = document.getElementById("ar-video");
+      const videoEntity = document.getElementById("video-entity");
+
+      let systemStarted = false;
+
+      // Unmute/Mute configuration
+      let isMuted = true;
+
+      // Start WebAR Experience
+      startBtn.addEventListener("click", () => {
+        onboardingScreen.classList.add("hidden");
+        scannerOverlay.classList.add("active");
+
+        // Initialize A-Frame MindAR System
+        const sceneEl = document.querySelector('a-scene');
+        const arSystem = sceneEl.systems["mindar-image-system"];
+
+        // Start engine
+        arSystem.start();
+        systemStarted = true;
+
+        // Try playing video in background (muted) to prime the browser video buffer
+        videoEl.play().then(() => {
+          // Pause and wait for tracking
+          videoEl.pause();
+        }).catch(err => {
+          console.warn("Video priming failed (expected for non-interaction contexts):", err);
+        });
+      });
+
+      // Capture engine/camera errors (e.g., if camera permission is blocked)
+      arScene.addEventListener("arError", (event) => {
+        console.error("WebAR Engine Error:", event);
+        statusDot.classList.add("error");
+        statusDot.classList.remove("detected");
+        statusText.textContent = "Camera blocked";
+        scanToast.querySelector("span").textContent = "Check permissions or hardware, then reload.";
+      });
+
+      // Auto-restart scanning when the page visibility returns (e.g., after switching back from the target card tab)
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && systemStarted) {
+          console.log("Tab focus regained. Refreshing camera and restarting WebAR tracking engine...");
+          const sceneEl = document.querySelector('a-scene');
+          const arSystem = sceneEl.systems["mindar-image-system"];
+          if (arSystem) {
+            try {
+              arSystem.stop();
+              arSystem.start();
+
+              // Reset visual states in case tracking got stuck
+              statusDot.classList.remove("detected");
+              statusDot.classList.remove("error");
+              statusText.textContent = "Scanning for target...";
+              reticleBox.classList.remove("tracking");
+              scanToast.querySelector("span").textContent = "Align card target inside the outline";
+            } catch (err) {
+              console.error("Failed to automatically restart WebAR system:", err);
+            }
+          }
+        }
+      });
+
+      // Target Tracking Events
+      arTarget.addEventListener("targetFound", () => {
+        console.log("WebAR Target Found!");
+
+        // Play video
+        videoEl.play();
+
+        // Update UI state
+        statusDot.classList.add("detected");
+        statusText.textContent = "Target Tracked & Playing";
+        reticleBox.classList.add("tracking");
+        scanToast.querySelector("span").textContent = "Tracking active";
+
+        // Enable audio control button
+        muteBtn.disabled = false;
+        if (isMuted) {
+          muteBtn.classList.add("highlight");
+        }
+      });
+
+      arTarget.addEventListener("targetLost", () => {
+        console.log("WebAR Target Lost");
+
+        // Pause video to save performance and sync with tracking state
+        videoEl.pause();
+
+        // Update UI state
+        statusDot.classList.remove("detected");
+        statusText.textContent = "Scanning for target...";
+        reticleBox.classList.remove("tracking");
+        scanToast.querySelector("span").textContent = "Align card target inside the outline";
+
+        // Disable audio control when not tracking (optional)
+        muteBtn.disabled = true;
+        muteBtn.classList.remove("highlight");
+      });
+
+      // Volume / Mute Controls
+      muteBtn.addEventListener("click", () => {
+        if (!systemStarted) return;
+
+        isMuted = !isMuted;
+        videoEl.muted = isMuted;
+
+        const soundWaves = volumeIcon.querySelectorAll(".sound-wave");
+        const muteCross = volumeIcon.querySelector(".mute-cross");
+
+        if (isMuted) {
+          volumeText.textContent = "Muted";
+          muteBtn.classList.add("highlight");
+          // Hide waves, show cross
+          soundWaves.forEach(w => w.style.display = "none");
+          muteCross.style.display = "block";
+        } else {
+          volumeText.textContent = "Playing Audio";
+          muteBtn.classList.remove("highlight");
+          // Show waves, hide cross
+          soundWaves.forEach(w => w.style.display = "block");
+          muteCross.style.display = "none";
+
+          // Re-trigger play just in case toggle occurs during tracking glitch
+          if (statusDot.classList.contains("detected")) {
+            videoEl.play();
+          }
+        }
+      });
+
+      // Home/Reset Action
+      resetBtn.addEventListener("click", () => {
+        console.log("Home button clicked");
+
+        // Pause and stop audio safely
+        try {
+          videoEl.pause();
+          if (videoEl.readyState > 0) {
+            videoEl.currentTime = 0;
+          }
+          videoEl.muted = true;
+        } catch (err) {
+          console.warn("Video cleanup warning:", err);
+        }
+        isMuted = true;
+
+        // Reset mute icon safely
+        try {
+          const soundWaves = volumeIcon.querySelectorAll(".sound-wave");
+          const muteCross = volumeIcon.querySelector(".mute-cross");
+          soundWaves.forEach(w => w.style.display = "none");
+          muteCross.style.display = "block";
+          volumeText.textContent = "Muted";
+        } catch (err) {
+          console.warn("Volume UI reset warning:", err);
+        }
+
+        // Stop tracking engine safely
+        try {
+          const sceneEl = document.querySelector('a-scene');
+          const arSystem = sceneEl.systems["mindar-image-system"];
+          if (arSystem && typeof arSystem.stop === "function") {
+            arSystem.stop();
+          }
+        } catch (err) {
+          console.warn("AR System stop warning:", err);
+        }
+
+        // Update overlay views (MUST execute no matter what)
+        scannerOverlay.classList.remove("active");
+        onboardingScreen.classList.remove("hidden");
+        systemStarted = false;
+
+        // Reset UI status
+        statusDot.classList.remove("detected");
+        statusDot.classList.remove("error");
+        statusText.textContent = "Scanning for target...";
+        reticleBox.classList.remove("tracking");
+      });
+    });
+  </script>
+</body>
+
+</html>
