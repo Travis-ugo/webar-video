@@ -144,6 +144,28 @@
     #scan-box.tracked {
       border-color: #10b981;
     }
+
+    /* Restart Camera button in header */
+    #refresh-button {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: #374151;
+      color: #ffffff;
+      border: 1px solid #4b5563;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: none; /* hidden until started */
+      font-weight: bold;
+      z-index: 15;
+    }
+
+    #refresh-button:hover {
+      background-color: #4b5563;
+    }
   </style>
 </head>
 <body>
@@ -160,6 +182,7 @@
   <!-- 2. Header Status -->
   <div class="header">
     <h2 id="header-status">WebAR Scanner</h2>
+    <button id="refresh-button">Restart Camera</button>
   </div>
 
   <!-- 3. Visual Scanner Box -->
@@ -196,6 +219,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       const startScreen = document.getElementById("start-screen");
       const startButton = document.getElementById("start-button");
+      const refreshButton = document.getElementById("refresh-button");
       const headerStatus = document.getElementById("header-status");
       const scanBox = document.getElementById("scan-box");
       const statusToast = document.getElementById("status-toast");
@@ -211,14 +235,38 @@
         console.log("Initial video pause error:", e);
       }
 
+      // Helper function to restart camera engine and refetch video streams
+      const restartCameraFeed = () => {
+        headerStatus.textContent = "Reconnecting camera...";
+        headerStatus.style.color = "#ffffff";
+        scanBox.classList.remove("tracked");
+        statusToast.textContent = "Restarting camera feed...";
+
+        const arSystem = arScene.systems["mindar-image-system"];
+        if (arSystem) {
+          try {
+            arSystem.stop();
+          } catch (e) {
+            console.log("Error stopping arSystem:", e);
+          }
+          // Request a fresh camera stream after a short timeout
+          setTimeout(() => {
+            arSystem.start();
+            headerStatus.textContent = "Scanning for target...";
+            statusToast.textContent = "Align card inside the frame";
+          }, 300);
+        }
+      };
+
       // When the user clicks the start button
       startButton.addEventListener("click", () => {
         // Hide start screen
         startScreen.style.display = "none";
 
-        // Show scanner frame and toast guide
+        // Show scanner frame, toast guide, and manual restart button
         scanBox.style.display = "block";
         statusToast.style.display = "block";
+        refreshButton.style.display = "block";
         headerStatus.textContent = "Scanning for target...";
 
         // Start MindAR Engine
@@ -233,6 +281,22 @@
         }).catch(err => {
           console.log("Initial video priming check:", err);
         });
+      });
+
+      // Manual camera restart button click handler
+      refreshButton.addEventListener("click", () => {
+        restartCameraFeed();
+      });
+
+      // Automatically refetch camera when tab focus is regained (switching tabs / locking phone)
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          // Only auto-restart if we already passed the start screen
+          if (startScreen.style.display === "none") {
+            console.log("Tab focus regained: refetching camera stream...");
+            restartCameraFeed();
+          }
+        }
       });
 
       // Listen for target detected
