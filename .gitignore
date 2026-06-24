@@ -1,0 +1,16 @@
+# Local SSL Certificates (Self-signed development keys)
+key.pem
+cert.pem
+
+# Dependency Directories
+node_modules/
+jspm_packages/
+
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
