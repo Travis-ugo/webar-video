@@ -138,11 +138,9 @@ httpsServer.listen(PORT_HTTPS, () => {
   console.log('==================================================\n');
 });
 
-// 5. Fire up HTTP Server (Port 8080) - useful for local previews and tunneling services (ngrok, localtunnel)
+// 5. Fire up HTTP Server (Port 8080) - useful for local desktop previews
 const httpServer = http.createServer(handleRequest);
 
 httpServer.listen(PORT_HTTP, () => {
-  console.log(`🔌 HTTP Server running at http://localhost:${PORT_HTTP}`);
-  console.log(`   (Expose this port via 'npx localtunnel --port 8080' or 'ngrok http 8080'`);
-  console.log(`    to get a trusted HTTPS tunnel link for easy iPhone/Safari testing!)\n`);
+  console.log(`🔌 HTTP Server running at http://localhost:${PORT_HTTP} (HTTP Preview only)\n`);
 });
