@@ -123,6 +123,7 @@
       z-index: 10;
       pointer-events: none;
       display: none; /* hidden until started */
+      white-space: nowrap; /* Keep toast text strictly on one line */
     }
 
     /* Dashed Scanning Box in center */
@@ -145,26 +146,32 @@
       border-color: #10b981;
     }
 
-    /* Restart Camera button in header */
-    #refresh-button {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: #374151;
-      color: #ffffff;
+    /* Pull-to-refresh indicator (Instagram-style) */
+    #pull-to-refresh {
+      position: fixed;
+      top: -60px; /* Hidden offscreen by default */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(31, 41, 55, 0.95);
       border: 1px solid #4b5563;
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      border-radius: 6px;
-      cursor: pointer;
-      display: none; /* hidden until started */
-      font-weight: bold;
-      z-index: 15;
+      color: #ffffff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000; /* Float above everything including start screen */
+      transition: transform 0.1s ease-out, top 0.2s ease-out, background-color 0.2s;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
-    #refresh-button:hover {
-      background-color: #4b5563;
+    #pull-to-refresh.pulling {
+      top: 20px; /* Pull down to 20px from top */
+    }
+
+    #pull-spinner {
+      transition: transform 0.05s linear;
     }
 
     /* Floating Mute/Unmute button (Instagram-style) */
@@ -236,7 +243,6 @@
   <!-- 2. Header Status -->
   <div class="header">
     <h2 id="header-status">WebAR Scanner</h2>
-    <button id="refresh-button">Restart Camera</button>
   </div>
 
   <!-- 3. Visual Scanner Box -->
@@ -260,6 +266,13 @@
       <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
       <line x1="23" y1="9" x2="17" y2="15"></line>
       <line x1="17" y1="9" x2="23" y2="15"></line>
+    </svg>
+  </div>
+
+  <!-- Custom pull-to-refresh spinner (Instagram-style) -->
+  <div id="pull-to-refresh" aria-hidden="true">
+    <svg id="pull-spinner" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
     </svg>
   </div>
 
@@ -291,11 +304,12 @@
     document.addEventListener("DOMContentLoaded", () => {
       const startScreen = document.getElementById("start-screen");
       const startButton = document.getElementById("start-button");
-      const refreshButton = document.getElementById("refresh-button");
       const muteButton = document.getElementById("mute-button");
       const muteIcon = document.getElementById("mute-icon");
       const soundFlash = document.getElementById("sound-flash");
       const soundFlashIcon = document.getElementById("sound-flash-icon");
+      const pullToRefresh = document.getElementById("pull-to-refresh");
+      const pullSpinner = document.getElementById("pull-spinner");
       const headerStatus = document.getElementById("header-status");
       const scanBox = document.getElementById("scan-box");
       const statusToast = document.getElementById("status-toast");
@@ -319,7 +333,6 @@
         // Show scanner overlays and control buttons
         scanBox.style.display = "block";
         statusToast.style.display = "block";
-        refreshButton.style.display = "block";
         muteButton.style.display = "flex";
         headerStatus.textContent = "Scanning for target...";
 
@@ -401,12 +414,54 @@
         startARScanner();
       });
 
-      // Manual camera restart button - reloads page to guarantee a fresh camera context!
-      refreshButton.addEventListener("click", () => {
-        // Ensure autostart flag is set so the camera turns back on immediately after refresh
-        sessionStorage.setItem("ar_autostart", "true");
-        window.location.reload();
-      });
+      // Touch drag-to-refresh logic (custom Pull-to-Refresh)
+      let touchStartY = 0;
+      let pulling = false;
+
+      document.body.addEventListener("touchstart", (e) => {
+        // Only track pulls if onboarding is completed
+        if (startScreen.style.display !== "none") return;
+        
+        // Save initial Y touch point
+        touchStartY = e.touches[0].clientY;
+        pulling = false;
+      }, { passive: true });
+
+      document.body.addEventListener("touchmove", (e) => {
+        if (startScreen.style.display !== "none") return;
+
+        const touchY = e.touches[0].clientY;
+        const diff = touchY - touchStartY;
+
+        // If dragging down from near the top of the screen
+        if (diff > 20 && touchStartY < 180) {
+          pulling = true;
+          pullToRefresh.classList.add("pulling");
+          // Rotate the reload icon based on drag distance
+          const rotation = Math.min(diff * 2, 360);
+          pullSpinner.style.transform = `rotate(${rotation}deg)`;
+        }
+      }, { passive: true });
+
+      document.body.addEventListener("touchend", (e) => {
+        if (pulling) {
+          const touchY = e.changedTouches[0].clientY;
+          const diff = touchY - touchStartY;
+
+          // If pulled down past the threshold (e.g. 100px), reload the page!
+          if (diff > 100) {
+            pullToRefresh.style.backgroundColor = "#10b981"; // Turn indicator green on reload trigger
+            sessionStorage.setItem("ar_autostart", "true");
+            setTimeout(() => {
+              window.location.reload();
+            }, 250);
+          } else {
+            // Cancel pull and hide spinner
+            pullToRefresh.classList.remove("pulling");
+          }
+        }
+        pulling = false;
+      }, { passive: true });
 
       // Automatically refetch camera when tab focus is regained (switching tabs / locking phone)
       document.addEventListener("visibilitychange", () => {
@@ -439,7 +494,6 @@
       document.body.addEventListener("click", (e) => {
         // Prevent click events on buttons or header from triggering the mute toggle
         if (
-          e.target.closest("#refresh-button") || 
           e.target.closest("#start-screen") || 
           e.target.closest(".header") || 
           e.target.closest("#mute-button")
