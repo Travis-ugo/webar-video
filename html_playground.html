@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!-- 
+  WELCOME TO THE HTML PLAYGROUND!
+  This file contains all the essential HTML elements you need to know as a beginner.
+  Read the comments (like this one) to understand what each tag does, then open this 
+  file in your browser using "Live Server" to see how they look!
+-->
+<html lang="en">
+<head>
+  <!-- 
+    The <head> section contains information ABOUT the page that the user doesn't see.
+    It tells the browser how to behave, what title to display, and where to load files.
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- The <title> sets the text that appears on the browser tab -->
+  <title>May's HTML Playground & Cheatsheet</title>
+
+  <style>
+    /* 
+      We've added a tiny bit of basic CSS styling here just to make the page 
+      clean and readable (so it's not too cramped!), but focus on the HTML tags below!
+    */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #333;
+    }
+    section {
+      margin-bottom: 40px;
+      padding: 20px;
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+      background-color: #fafafa;
+    }
+    h2 {
+      border-bottom: 2px solid #6366f1;
+      padding-bottom: 5px;
+      color: #1e293b;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+      border-collapse: collapse;
+      padding: 8px;
+    }
+    table {
+      width: 100%;
+    }
+    code {
+      background-color: #eee;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 
+    The <body> section contains everything that actually shows up on the screen.
+  -->
+
+  <header>
+    <!-- <h1> is the most important heading on a page. Always use only ONE <h1> per page. -->
+    <h1>🎈 HTML Playground: Learn by Doing</h1>
+    <p>Use this file to explore, break, and test HTML tags. Open this in your editor and change the text!</p>
+  </header>
+
+  <hr> <!-- <hr> creates a Horizontal Rule (a horizontal dividing line) -->
+
+  <!-- SECTION 1: Headings & Text -->
+  <section>
+    <h2>1. Headings & Paragraphs</h2>
+    <!-- 
+      Headings range from <h1> (largest) to <h6> (smallest). 
+      They create structure for your document. 
+    -->
+    <h1>Heading 1 (Huge)</h1>
+    <h2>Heading 2 (Large)</h2>
+    <h3>Heading 3 (Medium-Large)</h3>
+    <h4>Heading 4 (Medium)</h4>
+    <h5>Heading 5 (Medium-Small)</h5>
+    <h6>Heading 6 (Smallest)</h6>
+
+    <!-- <p> is for normal paragraph text. It starts on a new line and has some space around it. -->
+    <p>
+      This is a normal paragraph. Inside a paragraph, we can make text 
+      <strong>bold using the &lt;strong&gt; tag</strong> or we can make text 
+      <em>italic using the &lt;em&gt; (emphasis) tag</em>.
+    </p>
+
+    <p>
+      If we want to start writing on a new line<br>
+      without creating a whole new paragraph, we use the <br> tag (Line Break).
+      Note that the <code>&lt;br&gt;</code> tag is self-closing (no closing tag needed!).
+    </p>
+  </section>
+
+
+  <!-- SECTION 2: Links & Images -->
+  <section>
+    <h2>2. Links & Images</h2>
+    <!-- 
+      <a> is the Anchor tag, used to create links. 
+      - href: (Hypertext Reference) is the URL the link goes to.
+      - target="_blank": Tells the browser to open the link in a new tab.
+    -->
+    <p>
+      Visit the official <a href="https://www.w3schools.com/html/" target="_blank">W3Schools HTML Tutorial</a> to learn more.
+    </p>
+
+    <!-- 
+      <img> is the Image tag. It is self-closing.
+      - src: (Source) is the path or web link to the image file.
+      - alt: (Alternative text) describes the image for screen readers or if the image fails to load. Always include alt tags!
+    -->
+    <p>Here is an image loaded from the web:</p>
+    <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=400&q=80" 
+         alt="Computer keyboard and code on screen" 
+         width="100%" 
+         style="border-radius: 8px;">
+  </section>
+
+
+  <!-- SECTION 3: Lists -->
+  <section>
+    <h2>3. Lists</h2>
+    <!-- 
+      <ul> is an Unordered List (bullet points).
+      <li> is a List Item. You put them inside the <ul> or <ol>.
+    -->
+    <h3>Shopping List (Unordered)</h3>
+    <ul>
+      <li>Fresh Coffee Beans ☕</li>
+      <li>Dark Chocolate 🍫</li>
+      <li>HTML Guide 📖</li>
+    </ul>
+
+    <!-- 
+      <ol> is an Ordered List (numbered points: 1, 2, 3...).
+    -->
+    <h3>Morning Routine (Ordered)</h3>
+    <ol>
+      <li>Wake up</li>
+      <li>Drink coffee</li>
+      <li>Write HTML</li>
+    </ol>
+  </section>
+
+
+  <!-- SECTION 4: Tables -->
+  <section>
+    <h2>4. Tables</h2>
+    <!-- 
+      <table> defines the table.
+      <tr> (Table Row) defines a row.
+      <th> (Table Header) defines a bold, centered header cell.
+      <td> (Table Data) defines a standard table cell.
+    -->
+    <table>
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>Role</th>
+          <th>Difficulty</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HTML</td>
+          <td>Structure</td>
+          <td>Easy 🟢</td>
+        </tr>
+        <tr>
+          <td>CSS</td>
+          <td>Styling</td>
+          <td>Medium 🟡</td>
+        </tr>
+        <tr>
+          <td>JavaScript</td>
+          <td>Behavior / Logic</td>
+          <td>Hard 🔴</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- SECTION 5: Containers (Div & Span) -->
+  <section>
+    <h2>5. Divs & Spans (Containers)</h2>
+    <!-- 
+      <div> is a Block-level element. It acts like a large box that starts on a 
+      new line and takes up the full width. We use it to group chunks of code.
+    -->
+    <div style="background-color: #e0e7ff; padding: 15px; border-left: 5px solid #6366f1;">
+      <strong>I am a &lt;div&gt; block!</strong>
+      <p>I stack on my own line. I group this heading and paragraph together.</p>
+    </div>
+
+    <!-- 
+      <span> is an Inline-level element. It does NOT start on a new line and 
+      takes up only as much width as its content. We use it to style specific words.
+    </p>
+    -->
+    <p style="margin-top: 15px;">
+      Inside this paragraph, we are using a 
+      <span style="color: #ec4899; font-weight: bold;">&lt;span&gt; tag</span> 
+      to color just these specific words pink.
+    </p>
+  </section>
+
+
+  <!-- SECTION 6: Simple Form -->
+  <section>
+    <h2>6. Interactive Forms</h2>
+    <!-- 
+      <form> wraps input elements to collect user data.
+      <label> attaches text labels to inputs (great for accessibility).
+      <input> creates typing fields. Common types: text, email, password, checkbox, submit.
+    -->
+    <form action="#" method="GET" onsubmit="alert('You submitted the form!'); return false;">
+      <p>
+        <label for="username">Your Name:</label><br>
+        <input type="text" id="username" name="username" placeholder="Enter your name..." required>
+      </p>
+
+      <p>
+        <label for="useremail">Your Email Address:</label><br>
+        <input type="email" id="useremail" name="useremail" placeholder="may@example.com" required>
+      </p>
+
+      <!-- <button> with type="submit" sends the form data -->
+      <button type="submit" style="background-color: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+        Send Message
+      </button>
+    </form>
+  </section>
+
+  <footer>
+    <hr>
+    <p style="text-align: center; font-size: 12px; color: #777;">
+      Created for May's HTML/CSS Mentoring Session. Have fun coding! 🚀
+    </p>
+  </footer>
+
+</body>
+</html>
